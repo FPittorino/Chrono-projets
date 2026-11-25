@@ -14,8 +14,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Pointage" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M26.2 16A10.2 10.2 0 1 1 22.8 8.2' fill='none' stroke='%23D92D20' stroke-width='3.2' stroke-linecap='round'/%3E%3Cpolygon fill='%23D92D20' points='26.5,5.5 26.5,12 20.5,10.2'/%3E%3Cline x1='16' y1='16' x2='16' y2='10.5' stroke='%23D92D20' stroke-width='2.8' stroke-linecap='round'/%3E%3Cline x1='16' y1='16' x2='20.2' y2='18.5' stroke='%23D92D20' stroke-width='2.8' stroke-linecap='round'/%3E%3C/svg%3E" />
   <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
   <style>
     /* =========================================================================
@@ -97,9 +96,7 @@
     .logo {
       width: 36px;
       height: 36px;
-      border-radius: 10px;
       display: block;
-      object-fit: cover;
       flex-shrink: 0;
     }
 
@@ -1535,7 +1532,12 @@
   <div class="app">
     <header>
       <div class="brand">
-        <img class="logo" src="icon-192.png" alt="ChronoProjets" width="36" height="36" />
+        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="36" height="36" aria-hidden="true">
+          <path d="M26.2 16A10.2 10.2 0 1 1 22.8 8.2" fill="none" stroke="#D92D20" stroke-width="3.2" stroke-linecap="round" />
+          <polygon fill="#D92D20" points="26.5,5.5 26.5,12 20.5,10.2" />
+          <line x1="16" y1="16" x2="16" y2="10.5" stroke="#D92D20" stroke-width="2.8" stroke-linecap="round" />
+          <line x1="16" y1="16" x2="20.2" y2="18.5" stroke="#D92D20" stroke-width="2.8" stroke-linecap="round" />
+        </svg>
         <div>
           <h1>ChronoProjets</h1>
           <div class="subtitle">Suivi hebdomadaire local par projet</div>
