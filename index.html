@@ -96,7 +96,9 @@
     .logo {
       width: 36px;
       height: 36px;
+      border-radius: 10px;
       display: block;
+      object-fit: cover;
       flex-shrink: 0;
     }
 
@@ -383,6 +385,10 @@
       flex-shrink: 0;
     }
 
+    #statusText {
+      font-size: 18px;
+    }
+
     .status-line.is-running-text {
       color: var(--success);
     }
@@ -424,16 +430,18 @@
     }
 
     .current-project-title {
-      font-size: 21px;
+      font-size: 25px;
       font-weight: 700;
       margin: 0;
     }
 
     .project-code-pill {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 11.5px;
+      font-size: 13px;
+      line-height: 20px;
       font-weight: 700;
-      padding: 2px 8px;
+      padding: 2px 12px;
+      margin-left: 0px;
       border-radius: 999px;
       background: var(--soft);
       border: 1px solid var(--border);
@@ -1532,12 +1540,7 @@
   <div class="app">
     <header>
       <div class="brand">
-        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="36" height="36" aria-hidden="true">
-          <path d="M26.2 16A10.2 10.2 0 1 1 22.8 8.2" fill="none" stroke="#D92D20" stroke-width="3.2" stroke-linecap="round" />
-          <polygon fill="#D92D20" points="26.5,5.5 26.5,12 20.5,10.2" />
-          <line x1="16" y1="16" x2="16" y2="10.5" stroke="#D92D20" stroke-width="2.8" stroke-linecap="round" />
-          <line x1="16" y1="16" x2="20.2" y2="18.5" stroke="#D92D20" stroke-width="2.8" stroke-linecap="round" />
-        </svg>
+        <img class="logo" src="icon-192.png" alt="ChronoProjets" width="36" height="36" />
         <div>
           <h1>ChronoProjets</h1>
           <div class="subtitle">Suivi hebdomadaire local par projet</div>
