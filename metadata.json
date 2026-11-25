@@ -1,0 +1,6 @@
+{
+  "name": "ChronoProjets",
+  "description": "Suivi hebdomadaire local du temps par projet avec chronomètre, journal quotidien et bilan hebdomadaire.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

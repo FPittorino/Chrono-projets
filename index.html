@@ -1,0 +1,3494 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChronoProjets — Suivi Hebdomadaire Local</title>
+  <meta name="description" content="Suivi hebdomadaire local du temps par projet avec chronomètre, journal quotidien et bilan hebdomadaire." />
+  <meta property="og:title" content="ChronoProjets — Suivi Hebdomadaire Local" />
+  <meta property="og:description" content="Suivi hebdomadaire local du temps par projet avec chronomètre, journal quotidien et bilan hebdomadaire." />
+  <meta property="og:type" content="website" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Pointage" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+  <style>
+    /* =========================================================================
+       DESIGN TOKENS & THEME VARIABLES (LIGHT & DARK MODE)
+       ========================================================================= */
+    :root {
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-soft: rgba(37, 99, 235, 0.09);
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --danger-soft: rgba(220, 38, 38, 0.09);
+      --soft: #f8fafc;
+      --shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+      --radius: 14px;
+    }
+
+    body.dark {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --border: #334155;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-soft: rgba(59, 130, 246, 0.16);
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --danger-soft: rgba(239, 68, 68, 0.16);
+      --soft: #162032;
+      --shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+    }
+
+    /* =========================================================================
+       BASE & COMPACT NON-WRAPPING CONTROLS
+       ========================================================================= */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.4;
+      padding: 20px;
+      transition: background-color 0.18s ease, color 0.18s ease;
+    }
+
+    .app {
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--primary);
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+    }
+
+    button,
+    select,
+    input[type="text"],
+    input[type="date"] {
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      height: 34px;
+      padding: 0 12px;
+      outline: none;
+      white-space: nowrap;
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 34px;
+      padding: 0 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--soft);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    button.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+
+    button.primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      color: #ffffff;
+    }
+
+    button.ghost-stop {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--muted);
+    }
+
+    button.ghost-stop:hover:not(:disabled) {
+      background: var(--danger-soft);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    button.icon-btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      background: transparent;
+      border-color: transparent;
+      color: var(--muted);
+    }
+
+    button.icon-btn:hover:not(:disabled) {
+      background: var(--soft);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    /* Fixed-width animated Auto-start switch */
+    .toggle-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 34px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 0 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: var(--shadow);
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .toggle-wrap span {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .switch {
+      position: relative;
+      width: 38px;
+      height: 20px;
+      border-radius: 999px;
+      background: #cbd5e1;
+      transition: background-color 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    body.dark .switch {
+      background: #475569;
+    }
+
+    .switch.on {
+      background: var(--success);
+    }
+
+    .switch-knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #ffffff;
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    }
+
+    .switch.on .switch-knob {
+      transform: translateX(18px);
+    }
+
+    /* Fixed width sized to "OFF" (34px) so ON/OFF never shifts layout */
+    #autoStartLabel {
+      display: inline-block;
+      width: 34px;
+      text-align: center;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Fixed width sized to "Reprendre" (104px) with high-contrast hover in both states */
+    #pauseResumeBtn {
+      width: 104px;
+      height: 34px;
+      padding: 0 10px;
+      text-align: center;
+      white-space: nowrap;
+      flex-shrink: 0;
+      color: #ffffff;
+    }
+
+    #pauseResumeBtn.is-running {
+      background: var(--warning);
+      border-color: var(--warning);
+      color: #ffffff;
+    }
+
+    #pauseResumeBtn.is-running:hover:not(:disabled) {
+      background: #92400e;
+      border-color: #92400e;
+      color: #ffffff;
+    }
+
+    #pauseResumeBtn.is-paused {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+
+    #pauseResumeBtn.is-paused:hover:not(:disabled) {
+      background: #1e3a8a;
+      border-color: #1e3a8a;
+      color: #ffffff;
+    }
+
+    /* =========================================================================
+       BALANCED TWO-COLUMN DESKTOP LAYOUT (1FR 1FR)
+       ========================================================================= */
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(380px, 0.78fr) 1.22fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 1020px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    .right-column {
+      min-width: 0;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+    }
+
+    /* =========================================================================
+       ACTIVE TIMER CARD
+       ========================================================================= */
+    .timer-card {
+      border-top: 4px solid var(--primary);
+      transition: border-top-color 0.2s ease;
+    }
+
+    .timer-card.is-paused {
+      border-top-color: var(--warning);
+    }
+
+    .timer-card.is-stopped {
+      border-top-color: #94a3b8;
+    }
+
+    .timer-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .timer-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .status-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .status-line.is-running-text {
+      color: var(--success);
+    }
+
+    .status-line.is-paused-text {
+      color: var(--warning);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #94a3b8;
+      flex-shrink: 0;
+    }
+
+    .dot.running {
+      background: var(--success);
+    }
+
+    .dot.paused {
+      background: var(--warning);
+    }
+
+    .timer-main {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .project-heading-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 3px;
+    }
+
+    .current-project-title {
+      font-size: 21px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .project-code-pill {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--soft);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .current-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .clock {
+      font-size: 36px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+      line-height: 1.1;
+      color: var(--success);
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: color 0.2s ease;
+    }
+
+    .clock.is-paused {
+      color: var(--warning);
+    }
+
+    .clock.is-stopped {
+      color: var(--muted);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* =========================================================================
+       PROJECT QUICK-SWITCH TILES
+       ========================================================================= */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 10px;
+    }
+
+    .project-tile {
+      text-align: left;
+      height: auto;
+      background: var(--soft);
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
+      white-space: normal;
+    }
+
+    .project-tile:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: var(--soft);
+    }
+
+    .project-tile.selected {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+
+    .tile-header {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 700;
+      font-size: 13px;
+      width: 100%;
+    }
+
+    .tile-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .tile-code {
+      font-size: 11.5px;
+      color: var(--muted);
+      padding-left: 17px;
+      white-space: nowrap;
+    }
+
+    /* =========================================================================
+       JOURNAL TILE (MONDAY-TO-FRIDAY SELECTOR + DIRECT DAILY HOURS EDITOR)
+       ========================================================================= */
+    .journal-date-pill {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .journal-day-bar {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .journal-day-btn {
+      height: auto;
+      padding: 6px 2px;
+      border-radius: 9px;
+      background: var(--soft);
+      border: 1px solid var(--border);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      min-width: 0;
+      flex-shrink: 1;
+    }
+
+    .journal-day-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    .journal-day-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+
+    .journal-day-btn.active:hover:not(:disabled) {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      color: #ffffff;
+    }
+
+    .journal-day-name {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .journal-day-num {
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+
+    .journal-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .journal-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 11px;
+      background: var(--soft);
+      border: 1px solid var(--border);
+    }
+
+    .journal-row.is-dirty {
+      border-color: var(--primary);
+    }
+
+    .journal-proj-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .journal-proj-name {
+      font-size: 13px;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .journal-proj-code {
+      font-size: 11px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .journal-inputs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .journal-num-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11.5px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .journal-num-input {
+      width: 54px;
+      height: 30px;
+      padding: 0 6px;
+      text-align: right;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .journal-num-input:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+
+    .journal-save-btn {
+      height: 30px;
+      padding: 0 11px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 560px) {
+      .journal-row {
+        flex-wrap: wrap;
+      }
+      .journal-inputs {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+
+    /* =========================================================================
+       WEEKLY SUMMARY TABLE (MONDAY - FRIDAY, STRICT 00.00 DECIMAL HOURS)
+       ========================================================================= */
+    .week-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .week-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: var(--soft);
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    .week-badge {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 12px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .week-dates {
+      font-size: 12.5px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table.weekly-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-variant-numeric: tabular-nums;
+    }
+
+    table.weekly-table th,
+    table.weekly-table td {
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    table.weekly-table th.col-proj,
+    table.weekly-table td.col-proj {
+      text-align: left;
+    }
+
+    table.weekly-table th.col-code,
+    table.weekly-table td.col-code {
+      text-align: left;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--muted);
+    }
+
+    table.weekly-table th.col-code {
+      font-family: inherit;
+    }
+
+    table.weekly-table th.col-day,
+    table.weekly-table td.col-day {
+      text-align: center;
+    }
+
+    table.weekly-table th.col-day {
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    table.weekly-table th.col-day:hover {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    table.weekly-table th.col-day.selected-col {
+      background: var(--primary-soft);
+      color: var(--primary);
+      box-shadow: inset 0 -2px 0 var(--primary);
+    }
+
+    table.weekly-table th.col-total,
+    table.weekly-table td.col-total {
+      text-align: center;
+      font-weight: 700;
+    }
+
+    table.weekly-table th {
+      color: var(--muted);
+      font-weight: 700;
+      background: var(--soft);
+      border-top: 1px solid var(--border);
+    }
+
+    .code-cell-inner {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      vertical-align: middle;
+    }
+
+    .code-cell-label {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .zero-val {
+      color: var(--muted);
+    }
+
+    tr.totals-row td {
+      font-weight: 700;
+      background: var(--soft);
+      border-top: 1.5px solid var(--border);
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    .week-footer-total {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 2px solid var(--border);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .week-footer-label {
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .week-footer-value {
+      font-size: 24px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    /* =========================================================================
+       COMPACT PROJECT MANAGEMENT MODAL (REORDERABLE ROWS)
+       ========================================================================= */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 200;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 620px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 22px 54px rgba(0, 0, 0, 0.35);
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .add-project-card {
+      margin-top: 14px;
+      background: var(--soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .add-project-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .field-name {
+      flex: 1.5;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field-code {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field-color {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field-submit {
+      flex-shrink: 0;
+    }
+
+    .add-project-card label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .add-project-card input[type="text"] {
+      width: 100%;
+      height: 34px;
+      padding: 0 10px;
+      font-size: 13px;
+      border-radius: 8px;
+    }
+
+    .add-project-card input[type="color"] {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .add-project-card input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+      border-radius: 50%;
+    }
+
+    .add-project-card input[type="color"]::-webkit-color-swatch {
+      border: none;
+      border-radius: 50%;
+    }
+
+    .add-project-card input[type="color"]::-moz-color-swatch {
+      border: none;
+      border-radius: 50%;
+    }
+
+    .add-color-picker-wrap {
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #addProjectSubmitBtn {
+      height: 34px;
+      padding: 0 14px;
+      font-size: 12.5px;
+      border-radius: 9px;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 560px) {
+      .add-project-row {
+        flex-wrap: wrap;
+      }
+      .field-name {
+        flex: 1 1 100%;
+      }
+      .field-code {
+        flex: 1 1 auto;
+      }
+    }
+
+    .manage-list-section {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      flex: 1;
+    }
+
+    .manage-helper {
+      margin: 0 0 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .project-list-scroll {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 2px;
+    }
+
+    .project-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 8px 10px;
+      background: var(--card);
+      transition: border-color 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
+    }
+
+    .project-item-row.is-dragging {
+      opacity: 0.45;
+    }
+
+    .project-item-row.is-drag-over {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    .project-item-main {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .drag-handle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 28px;
+      color: var(--muted);
+      cursor: grab;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .reorder-arrows {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      flex-shrink: 0;
+    }
+
+    .reorder-btn {
+      width: 20px;
+      height: 14px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 4px;
+    }
+
+    .reorder-btn:hover:not(:disabled) {
+      background: var(--soft);
+      color: var(--text);
+    }
+
+    .inline-color-picker {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      overflow: hidden;
+      margin-left: 2px;
+    }
+
+    .inline-color-picker::-webkit-color-swatch-wrapper {
+      padding: 0;
+      border-radius: 50%;
+    }
+
+    .inline-color-picker::-webkit-color-swatch {
+      border: none;
+      border-radius: 50%;
+    }
+
+    .inline-color-picker::-moz-color-swatch {
+      border: none;
+      border-radius: 50%;
+    }
+
+    .inline-edit-name {
+      flex: 1.4;
+      min-width: 0;
+      height: 30px;
+      padding: 0 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 7px;
+    }
+
+    .inline-edit-name:hover,
+    .inline-edit-name:focus {
+      background: var(--soft);
+      border-color: var(--border);
+    }
+
+    .inline-edit-code {
+      width: 80px;
+      height: 30px;
+      padding: 0 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      flex-shrink: 0;
+    }
+
+    .inline-edit-code:hover,
+    .inline-edit-code:focus {
+      background: var(--soft);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .project-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .star-btn {
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #cbd5e1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    body.dark .star-btn {
+      color: #475569;
+    }
+
+    .star-btn:hover:not(:disabled) {
+      color: #f59e0b;
+      background: var(--soft);
+    }
+
+    .star-btn.is-default {
+      color: #f59e0b;
+    }
+
+    .delete-btn {
+      height: 30px;
+      padding: 0 10px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .delete-btn:hover:not(:disabled) {
+      background: var(--danger-soft);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    /* =========================================================================
+       MINI-WIDGET FLOTTANT (DOCUMENT PICTURE-IN-PICTURE)
+       ========================================================================= */
+    .pip-trigger-btn.is-open {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+
+    .pip-trigger-btn.is-open:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+    }
+
+    .pip-notice {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #fcd34d;
+      background: #fffbeb;
+      color: #78350f;
+      font-size: 12px;
+    }
+
+    body.dark .pip-notice {
+      border-color: #92400e;
+      background: rgba(120, 53, 15, 0.3);
+      color: #fde68a;
+    }
+
+    .pip-notice.is-visible {
+      display: flex;
+    }
+
+    .pip-notice-close {
+      height: 24px;
+      width: 24px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: inherit;
+      border-radius: 6px;
+    }
+
+    body.pip-body {
+      padding: 12px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      user-select: none;
+    }
+
+    .pip-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .pip-timer-card {
+      border-top: 4px solid var(--primary);
+    }
+
+    .pip-timer-card.is-paused {
+      border-top-color: var(--warning);
+    }
+
+    .pip-timer-card.is-stopped {
+      border-top-color: #94a3b8;
+    }
+
+    .pip-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .pip-pointage {
+      font-size: 11px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .pip-pointage strong {
+      color: var(--text);
+    }
+
+    .pip-main-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .pip-proj-wrap {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .pip-proj-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pip-proj-code {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pip-clock {
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      color: var(--success);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .pip-clock.is-paused {
+      color: var(--warning);
+    }
+
+    .pip-clock.is-stopped {
+      color: var(--muted);
+    }
+
+    .pip-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .pip-actions button {
+      height: 32px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .pip-projects-card {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .pip-projects-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .pip-projects-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .pip-proj-btn {
+      height: auto;
+      min-height: 34px;
+      padding: 6px 9px;
+      justify-content: flex-start;
+      gap: 7px;
+      border-radius: 9px;
+      background: var(--soft);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      min-width: 0;
+    }
+
+    .pip-proj-btn:hover {
+      border-color: var(--primary);
+    }
+
+    .pip-proj-btn.selected {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+
+    .pip-proj-btn-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* =========================================================================
+       SAUVEGARDE & TRANSFERT (EXPORT / IMPORT)
+       ========================================================================= */
+    .transfer-section {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .transfer-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .transfer-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .transfer-desc {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .transfer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .transfer-actions button {
+      height: 32px;
+      padding: 0 10px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .transfer-feedback {
+      display: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      border: 1px solid transparent;
+    }
+
+    .transfer-feedback.is-success {
+      display: block;
+      border-color: #6ee7b7;
+      background: #ecfdf5;
+      color: #065f46;
+    }
+
+    .transfer-feedback.is-error {
+      display: block;
+      border-color: #fca5a5;
+      background: #fef2f2;
+      color: #991b1b;
+    }
+
+    body.dark .transfer-feedback.is-success {
+      border-color: #047857;
+      background: rgba(6, 78, 59, 0.35);
+      color: #a7f3d0;
+    }
+
+    body.dark .transfer-feedback.is-error {
+      border-color: #991b1b;
+      background: rgba(127, 29, 29, 0.35);
+      color: #fecaca;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo">CP</div>
+        <div>
+          <h1>ChronoProjets</h1>
+          <div class="subtitle">Suivi hebdomadaire local par projet</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div
+          id="autoStartToggle"
+          class="toggle-wrap"
+          role="switch"
+          aria-checked="false"
+          tabindex="0"
+          title="Démarre automatiquement le projet par défaut à l'ouverture"
+        >
+          <span>Auto-start</span>
+          <div id="autoStartSwitch" class="switch">
+            <div class="switch-knob"></div>
+          </div>
+          <span id="autoStartLabel">OFF</span>
+        </div>
+
+        <button
+          id="pipBtn"
+          type="button"
+          class="pip-trigger-btn"
+          title="Ouvrir un mini-widget flottant toujours visible au premier plan (Chrome / Edge)"
+        >
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="14" rx="2"></rect>
+            <rect x="12" y="10" width="7" height="5" rx="1" fill="currentColor"></rect>
+          </svg>
+          <span id="pipBtnLabel">Mini-widget</span>
+        </button>
+
+        <button id="themeBtn" type="button" title="Thème clair / sombre">Thème</button>
+      </div>
+    </header>
+
+    <div id="pipNotice" class="pip-notice" role="status">
+      <span id="pipNoticeText"></span>
+      <button id="pipNoticeClose" type="button" class="pip-notice-close" aria-label="Fermer le message">✕</button>
+    </div>
+
+    <main class="main-grid">
+      <!-- Left Column: Active Timer + Project Quick-Switch Tiles + Daily Journal -->
+      <div class="left-column">
+        <section id="timerCard" class="card timer-card is-stopped">
+          <div class="timer-top">
+            <div id="statusLine" class="status-line">
+              <span id="statusDot" class="dot"></span>
+              <span id="statusText">ARRÊTÉ</span>
+            </div>
+            <div class="timer-actions">
+              <button id="pauseResumeBtn" type="button" class="is-running" disabled>Pause</button>
+              <button id="stopTimerBtn" type="button" class="ghost-stop" disabled title="Arrêter le chronomètre actif">Arrêter</button>
+            </div>
+          </div>
+
+          <div class="timer-main">
+            <div>
+              <div class="project-heading-row">
+                <h2 id="currentProjectName" class="current-project-title">Aucun projet</h2>
+                <span id="currentProjectCode" class="project-code-pill" style="display:none;"></span>
+              </div>
+              <div id="currentProjectMeta" class="current-meta">Sélectionnez un projet pour démarrer</div>
+            </div>
+            <div id="mainClock" class="clock is-stopped">00:00:00</div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="section-head">
+            <h2 class="section-title">Projets</h2>
+            <button id="openProjectsModalBtn" type="button">Gérer les projets</button>
+          </div>
+          <div id="projectsGrid" class="projects-grid"></div>
+        </section>
+
+        <!-- Journal Tile: 5-day Monday-to-Friday selector + direct daily hours/minutes editor -->
+        <section class="card">
+          <div class="section-head">
+            <h2 class="section-title">Journal</h2>
+            <span id="journalDateLabel" class="journal-date-pill"></span>
+          </div>
+          <div id="journalDayBar" class="journal-day-bar" role="tablist" aria-label="Jour de la semaine à éditer"></div>
+          <div id="journalList" class="journal-list"></div>
+        </section>
+      </div>
+
+      <!-- Right Column: Monday-to-Friday Weekly Summary -->
+      <aside class="right-column">
+        <section class="card">
+          <div class="section-head">
+            <h2 class="section-title">Bilan hebdomadaire</h2>
+          </div>
+
+          <div class="week-controls">
+            <button id="prevWeekBtn" type="button" title="Semaine précédente">&lt;</button>
+            <input id="datePicker" type="date" aria-label="Date de référence de la semaine" />
+            <button id="nextWeekBtn" type="button" title="Semaine suivante">&gt;</button>
+            <button id="thisWeekBtn" type="button">Cette semaine</button>
+          </div>
+
+          <div class="week-banner">
+            <span id="weekNumberBadge" class="week-badge">Semaine 01</span>
+            <span id="weekRangeLabel" class="week-dates"></span>
+          </div>
+
+          <div id="weeklyTableHost" class="table-scroll"></div>
+
+          <div class="week-footer-total">
+            <span class="week-footer-label">Total de la semaine</span>
+            <span id="weekGrandTotal" class="week-footer-value">00.00</span>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Single Unified Project Management Modal -->
+  <div id="projectsModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="projectsModalTitle">
+      <div class="modal-head">
+        <h3 id="projectsModalTitle" class="modal-title">Gérer les projets</h3>
+        <button type="button" class="icon-btn" data-close="projectsModal" aria-label="Fermer">✕</button>
+      </div>
+
+      <form id="addProjectForm" class="add-project-card">
+        <div class="add-project-row">
+          <div class="field-name">
+            <label for="newProjectName">NOM DU PROJET *</label>
+            <input id="newProjectName" type="text" placeholder="Ex: Refonte Portail Client" required />
+          </div>
+          <div class="field-code">
+            <label for="newProjectCode">CODE / CLIENT</label>
+            <input id="newProjectCode" type="text" placeholder="Ex: PRJ-204" maxlength="12" />
+          </div>
+          <div class="field-color">
+            <label for="newProjectColor">COULEUR</label>
+            <div class="add-color-picker-wrap">
+              <input
+                id="newProjectColor"
+                type="color"
+                class="inline-color-picker"
+                value="#3b82f6"
+                aria-label="Couleur du nouveau projet"
+                title="Choisir la couleur du projet"
+              />
+            </div>
+          </div>
+          <div class="field-submit">
+            <button id="addProjectSubmitBtn" type="submit" class="primary">Ajouter le projet</button>
+          </div>
+        </div>
+      </form>
+
+      <div class="manage-list-section">
+        <p class="manage-helper">Glissez-déposez ou utilisez les flèches pour réorganiser l'ordre · Étoile = démarrage automatique :</p>
+        <div id="projectManageList" class="project-list-scroll"></div>
+      </div>
+
+      <div class="transfer-section">
+        <div class="transfer-row">
+          <div>
+            <div class="transfer-title">Sauvegarde &amp; transfert des pointages</div>
+            <div class="transfer-desc">Exportez ou restaurez tous vos projets et pointages (.json), ou exportez la semaine (.csv).</div>
+          </div>
+          <div class="transfer-actions">
+            <button id="exportJsonBtn" type="button" title="Télécharger une sauvegarde complète (.json) réimportable">
+              Exporter (.json)
+            </button>
+            <button id="importJsonBtn" type="button" title="Restaurer une sauvegarde (.json) précédemment exportée">
+              Importer (.json)
+            </button>
+            <button id="exportCsvBtn" type="button" title="Exporter le bilan de la semaine sélectionnée au format CSV (Excel)">
+              Semaine (.csv)
+            </button>
+            <input id="importJsonInput" type="file" accept=".json,application/json" style="display:none;" aria-label="Importer un fichier de sauvegarde JSON" />
+          </div>
+        </div>
+        <div id="transferFeedback" class="transfer-feedback" role="status"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = "chronoprojets_v1";
+
+      const DEFAULT_PROJECTS = [
+        { id: "p-gen", name: "Général", code: "GEN", color: "#64748b" },
+        { id: "p-dev", name: "Développement", code: "DEV", color: "#2563eb" },
+        { id: "p-reu", name: "Réunions & Suivi", code: "REU", color: "#0d9488" }
+      ];
+
+      // 5 workdays: Monday (0) through Friday (4)
+      const DAY_NAMES = ["Lun", "Mar", "Mer", "Jeu", "Ven"];
+
+      // Track per-project pending/dirty edits in Journal so background ticks or re-renders
+      // never overwrite user typing before "Appliquer" is clicked.
+      const dirtyJournalProjects = new Set();
+      let draggedProjectIndex = null;
+      let pipWindow = null;
+
+      function uid(prefix = "proj") {
+        return prefix + "-" + Math.random().toString(36).slice(2, 9);
+      }
+
+      function toDateKey(ms = Date.now()) {
+        const d = new Date(ms);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      }
+
+      function parseDateKey(dateKey) {
+        const [y, m, d] = dateKey.split("-").map(Number);
+        return new Date(y, m - 1, d, 12, 0, 0, 0);
+      }
+
+      function addCalendarDays(baseDate, dayOffset) {
+        return new Date(
+          baseDate.getFullYear(),
+          baseDate.getMonth(),
+          baseDate.getDate() + dayOffset,
+          12,
+          0,
+          0,
+          0
+        );
+      }
+
+      /**
+       * Clamp Saturday (6) or Sunday (0) back to Friday of the same ISO week.
+       */
+      function clampToWorkday(dateKey) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return toDateKey(Date.now());
+        const d = parseDateKey(dateKey);
+        const day = d.getDay();
+        if (day === 6) return toDateKey(addCalendarDays(d, -1).getTime());
+        if (day === 0) return toDateKey(addCalendarDays(d, -2).getTime());
+        return dateKey;
+      }
+
+      function formatHMS(totalSec) {
+        const s = Math.max(0, Math.floor(totalSec));
+        const h = String(Math.floor(s / 3600)).padStart(2, "0");
+        const m = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+        const sec = String(s % 60).padStart(2, "0");
+        return `${h}:${m}:${sec}`;
+      }
+
+      function roundSecondsToQuarterHours(sec) {
+        if (!sec || sec < 300) return 0;
+        return Math.ceil(sec / 900) * 0.25;
+      }
+
+      function formatDecimalHours(hours) {
+        const safe = Number.isFinite(hours) && hours > 0 ? hours : 0;
+        return safe.toFixed(2).padStart(5, "0");
+      }
+
+      /**
+       * Compute ISO week number, formatted range, and 5 Monday-to-Friday day descriptors (0..4).
+       */
+      function getISOWeekInfo(dateKey) {
+        const ref = parseDateKey(dateKey);
+        const isoWeekday = ref.getDay() === 0 ? 7 : ref.getDay(); // Mon=1 .. Sun=7
+        const mondayOffset = -(isoWeekday - 1);
+        const monday = addCalendarDays(ref, mondayOffset);
+
+        const days = [];
+        for (let i = 0; i < 5; i++) {
+          const dt = addCalendarDays(monday, i);
+          days.push({
+            index: i,
+            dateKey: toDateKey(dt.getTime()),
+            dayName: DAY_NAMES[i],
+            dayNumber: String(dt.getDate()).padStart(2, "0"),
+            dateObj: dt
+          });
+        }
+
+        const thursday = addCalendarDays(monday, 3);
+        const yearStart = new Date(thursday.getFullYear(), 0, 1, 12, 0, 0, 0);
+        const weekNumber = Math.ceil(((thursday - yearStart) / 86400000 + 1) / 7);
+
+        const startLabel = days[0].dateObj.toLocaleDateString("fr-CA", {
+          day: "numeric",
+          month: "short"
+        });
+        const endLabel = days[4].dateObj.toLocaleDateString("fr-CA", {
+          day: "numeric",
+          month: "short",
+          year: "numeric"
+        });
+
+        return {
+          weekNumber,
+          rangeText: `${startLabel} – ${endLabel}`,
+          days
+        };
+      }
+
+      function normalizeParsedState(parsed, preserveRunningTimer) {
+        const today = clampToWorkday(toDateKey(Date.now()));
+
+        const projects =
+          Array.isArray(parsed.projects) && parsed.projects.length > 0
+            ? parsed.projects.map((p) => ({
+                id: typeof p.id === "string" && p.id ? p.id : uid("proj"),
+                name: String(p.name || "Projet").trim() || "Projet",
+                code: String(p.code || "").trim(),
+                color: typeof p.color === "string" && p.color ? p.color : "#3b82f6"
+              }))
+            : DEFAULT_PROJECTS.map((p) => ({ ...p }));
+
+        const validIds = new Set(projects.map((p) => p.id));
+
+        const rawDefaultId =
+          (parsed.settings && parsed.settings.defaultProjectId) || parsed.defaultProjectId;
+        const defaultProjectId =
+          rawDefaultId && validIds.has(rawDefaultId) ? rawDefaultId : projects[0].id;
+
+        const rawAutoStart =
+          parsed.settings && typeof parsed.settings.autoStart === "boolean"
+            ? parsed.settings.autoStart
+            : Boolean(parsed.autoStart);
+
+        const rawThemeCandidate =
+          (parsed.settings && parsed.settings.theme) || parsed.theme;
+        const theme =
+          rawThemeCandidate === "dark" || rawThemeCandidate === "light"
+            ? rawThemeCandidate
+            : parsed.dark === true
+            ? "dark"
+            : "light";
+
+        const secondsByDate = {};
+        if (parsed.secondsByDate && typeof parsed.secondsByDate === "object") {
+          for (const [dKey, map] of Object.entries(parsed.secondsByDate)) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(dKey) || !map || typeof map !== "object") {
+              continue;
+            }
+            const cleanDay = {};
+            for (const [pId, sec] of Object.entries(map)) {
+              if (typeof sec === "number" && Number.isFinite(sec) && sec > 0) {
+                cleanDay[pId] = Math.floor(sec);
+              }
+            }
+            if (Object.keys(cleanDay).length > 0) {
+              secondsByDate[dKey] = cleanDay;
+            }
+          }
+        }
+
+        const activeProjectId =
+          preserveRunningTimer &&
+          parsed.activeProjectId &&
+          validIds.has(parsed.activeProjectId)
+            ? parsed.activeProjectId
+            : null;
+
+        const isPaused = activeProjectId ? Boolean(parsed.isPaused) : false;
+        const lastTickMs =
+          activeProjectId && !isPaused && typeof parsed.lastTickMs === "number"
+            ? parsed.lastTickMs
+            : activeProjectId && !isPaused
+            ? Date.now()
+            : null;
+
+        const lastSessionDate =
+          typeof parsed.lastSessionDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(parsed.lastSessionDate)
+            ? parsed.lastSessionDate
+            : typeof parsed.lastTickMs === "number"
+            ? toDateKey(parsed.lastTickMs)
+            : typeof parsed.selectedDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(parsed.selectedDate)
+            ? parsed.selectedDate
+            : undefined;
+
+        return {
+          projects,
+          secondsByDate,
+          activeProjectId,
+          isPaused,
+          lastTickMs,
+          selectedDate:
+            typeof parsed.selectedDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(parsed.selectedDate)
+              ? clampToWorkday(parsed.selectedDate)
+              : today,
+          lastSessionDate,
+          settings: {
+            autoStart: rawAutoStart,
+            defaultProjectId,
+            theme
+          }
+        };
+      }
+
+      function loadState() {
+        const todayKey = toDateKey(Date.now());
+        const today = clampToWorkday(todayKey);
+        const fallback = {
+          projects: DEFAULT_PROJECTS.map((p) => ({ ...p })),
+          secondsByDate: {},
+          activeProjectId: null,
+          isPaused: false,
+          lastTickMs: null,
+          selectedDate: today,
+          lastSessionDate: todayKey,
+          settings: {
+            autoStart: false,
+            defaultProjectId: DEFAULT_PROJECTS[0].id,
+            theme: "light"
+          }
+        };
+
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return fallback;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== "object") return fallback;
+          return normalizeParsedState(parsed, true);
+        } catch (_) {
+          return fallback;
+        }
+      }
+
+      let state = loadState();
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (_) {}
+      }
+
+      function downloadTextFile(filename, content, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      function csvEscape(value) {
+        const str = String(value == null ? "" : value);
+        if (/[;"\r\n]/.test(str)) {
+          return '"' + str.replace(/"/g, '""') + '"';
+        }
+        return str;
+      }
+
+      function setTransferFeedback(kind, text) {
+        const el = document.getElementById("transferFeedback");
+        if (!el) return;
+        el.className = "transfer-feedback";
+        if (!kind || !text) {
+          el.textContent = "";
+          return;
+        }
+        el.textContent = text;
+        el.classList.add(kind === "success" ? "is-success" : "is-error");
+      }
+
+      function exportBackupJson() {
+        const now = Date.now();
+        if (state.activeProjectId && !state.isPaused) {
+          commitElapsedSeconds(now);
+          saveState();
+        }
+        const filename = `chronoprojets-sauvegarde-${toDateKey(now)}.json`;
+        downloadTextFile(filename, JSON.stringify(state, null, 2), "application/json;charset=utf-8");
+        setTransferFeedback("success", `Sauvegarde exportée (${filename}).`);
+      }
+
+      function exportWeeklyCsv() {
+        const now = Date.now();
+        if (state.activeProjectId && !state.isPaused) {
+          commitElapsedSeconds(now);
+          saveState();
+        }
+        const week = getISOWeekInfo(state.selectedDate);
+        const dailyTotals = [0, 0, 0, 0, 0];
+
+        const headers = [
+          "Projet",
+          "Code",
+          ...week.days.map((d) => `${d.dayName} ${d.dayNumber}`),
+          "Total"
+        ];
+        const lines = [headers.map(csvEscape).join(";")];
+
+        state.projects.forEach((proj) => {
+          let rowTotal = 0;
+          const dayCols = week.days.map((day, idx) => {
+            const sec = getProjectSecondsForDate(day.dateKey, proj.id, now);
+            const rounded = roundSecondsToQuarterHours(sec);
+            rowTotal += rounded;
+            dailyTotals[idx] += rounded;
+            return formatDecimalHours(rounded);
+          });
+          lines.push([proj.name, proj.code || "", ...dayCols, formatDecimalHours(rowTotal)].map(csvEscape).join(";"));
+        });
+
+        const grandTotal = dailyTotals.reduce((a, b) => a + b, 0);
+        lines.push(["Total jour", "", ...dailyTotals.map(formatDecimalHours), formatDecimalHours(grandTotal)].map(csvEscape).join(";"));
+
+        const filename = `chronoprojets-semaine-${String(week.weekNumber).padStart(2, "0")}-${week.days[0].dateKey}.csv`;
+        downloadTextFile(filename, "\uFEFF" + lines.join("\r\n"), "text/csv;charset=utf-8");
+        setTransferFeedback("success", `Tableau hebdomadaire exporté (${filename}).`);
+      }
+
+      async function handleImportJsonFile(file) {
+        if (!file) return;
+        try {
+          const text = await file.text();
+          const parsed = JSON.parse(text);
+          if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+            throw new Error("Format JSON non reconnu.");
+          }
+          const hasProjects = Array.isArray(parsed.projects) && parsed.projects.length > 0;
+          const hasSeconds = Boolean(
+            parsed.secondsByDate && typeof parsed.secondsByDate === "object" && !Array.isArray(parsed.secondsByDate)
+          );
+          if (!hasProjects && !hasSeconds) {
+            throw new Error("Aucune donnée de projets ou de pointages trouvée dans ce fichier.");
+          }
+
+          dirtyJournalProjects.clear();
+          state = normalizeParsedState(parsed, false);
+          saveState();
+          renderProjectsModal();
+          renderAll(Date.now(), { forceJournalSync: true });
+
+          const dayCount = Object.keys(state.secondsByDate).length;
+          setTransferFeedback(
+            "success",
+            `Import réussi : ${state.projects.length} projet(s) et ${dayCount} jour(s) de pointages restaurés.`
+          );
+        } catch (err) {
+          setTransferFeedback(
+            "error",
+            err && err.message ? err.message : "Impossible de lire ce fichier de sauvegarde JSON."
+          );
+        }
+      }
+
+      function getProject(projectId) {
+        return state.projects.find((p) => p.id === projectId) || null;
+      }
+
+      function addSecondsToDate(dateKey, projectId, deltaSec) {
+        if (!deltaSec || deltaSec <= 0) return;
+        if (!state.secondsByDate[dateKey]) {
+          state.secondsByDate[dateKey] = {};
+        }
+        state.secondsByDate[dateKey][projectId] =
+          (state.secondsByDate[dateKey][projectId] || 0) + Math.floor(deltaSec);
+      }
+
+      const MAX_OFFLINE_GAP_MS = 5 * 60 * 1000;
+
+      function resetStateForNewDay(now = Date.now()) {
+        const todayKey = toDateKey(now);
+        const clampedToday = clampToWorkday(todayKey);
+        dirtyJournalProjects.clear();
+
+        state.selectedDate = clampedToday;
+        state.lastSessionDate = todayKey;
+
+        if (state.settings.autoStart) {
+          const defaultProj = state.settings.defaultProjectId
+            ? getProject(state.settings.defaultProjectId)
+            : null;
+          const targetProj = defaultProj || state.projects[0] || null;
+          if (targetProj) {
+            state.activeProjectId = targetProj.id;
+            state.isPaused = false;
+            state.lastTickMs = now;
+            return;
+          }
+        }
+
+        state.activeProjectId = null;
+        state.isPaused = false;
+        state.lastTickMs = null;
+      }
+
+      function commitElapsedSeconds(now = Date.now()) {
+        if (
+          !state.activeProjectId ||
+          state.isPaused ||
+          typeof state.lastTickMs !== "number"
+        ) {
+          return;
+        }
+        if (now <= state.lastTickMs) return;
+
+        const gapMs = now - state.lastTickMs;
+        const tickDay = toDateKey(state.lastTickMs);
+        const nowDay = toDateKey(now);
+
+        if (tickDay !== nowDay && gapMs > MAX_OFFLINE_GAP_MS) {
+          resetStateForNewDay(now);
+          return;
+        }
+
+        if (gapMs > MAX_OFFLINE_GAP_MS) {
+          state.lastTickMs = now;
+          state.lastSessionDate = nowDay;
+          return;
+        }
+
+        let cursor = state.lastTickMs;
+        const projectId = state.activeProjectId;
+
+        while (cursor < now) {
+          const d = new Date(cursor);
+          const nextMidnight = new Date(
+            d.getFullYear(),
+            d.getMonth(),
+            d.getDate() + 1,
+            0,
+            0,
+            0,
+            0
+          ).getTime();
+
+          const segmentEnd = Math.min(now, nextMidnight);
+          const elapsedSec = Math.floor((segmentEnd - cursor) / 1000);
+          if (elapsedSec > 0) {
+            addSecondsToDate(toDateKey(cursor), projectId, elapsedSec);
+            cursor += elapsedSec * 1000;
+          } else {
+            break;
+          }
+        }
+
+        state.lastTickMs = cursor;
+        state.lastSessionDate = nowDay;
+        if (tickDay !== nowDay) {
+          state.selectedDate = clampToWorkday(nowDay);
+        }
+      }
+
+      function getProjectSecondsForDate(dateKey, projectId, now = Date.now()) {
+        const stored =
+          (state.secondsByDate[dateKey] && state.secondsByDate[dateKey][projectId]) || 0;
+
+        if (
+          state.activeProjectId === projectId &&
+          !state.isPaused &&
+          typeof state.lastTickMs === "number" &&
+          now > state.lastTickMs &&
+          now - state.lastTickMs <= MAX_OFFLINE_GAP_MS
+        ) {
+          let extra = 0;
+          let cursor = state.lastTickMs;
+          while (cursor < now) {
+            const d = new Date(cursor);
+            const nextMidnight = new Date(
+              d.getFullYear(),
+              d.getMonth(),
+              d.getDate() + 1,
+              0,
+              0,
+              0,
+              0
+            ).getTime();
+            const segmentEnd = Math.min(now, nextMidnight);
+            const sec = Math.floor((segmentEnd - cursor) / 1000);
+            if (sec <= 0) break;
+            if (toDateKey(cursor) === dateKey) {
+              extra += sec;
+            }
+            cursor += sec * 1000;
+          }
+          return stored + extra;
+        }
+
+        return stored;
+      }
+
+      function selectAndStartProject(projectId) {
+        const proj = getProject(projectId);
+        if (!proj) return;
+
+        const now = Date.now();
+        const todayKey = toDateKey(now);
+        commitElapsedSeconds(now);
+
+        state.activeProjectId = projectId;
+        state.isPaused = false;
+        state.lastTickMs = now;
+        state.selectedDate = clampToWorkday(todayKey);
+        state.lastSessionDate = todayKey;
+
+        saveState();
+        renderAll(now, { forceJournalSync: true });
+      }
+
+      function togglePauseResume() {
+        const now = Date.now();
+        const todayKey = toDateKey(now);
+        if (!state.activeProjectId || !getProject(state.activeProjectId)) return;
+
+        if (!state.isPaused) {
+          commitElapsedSeconds(now);
+          state.isPaused = true;
+          state.lastTickMs = null;
+          state.lastSessionDate = todayKey;
+        } else {
+          if (state.lastSessionDate && state.lastSessionDate !== todayKey) {
+            const resumedProjectId = state.activeProjectId;
+            resetStateForNewDay(now);
+            state.activeProjectId = resumedProjectId;
+          }
+          state.isPaused = false;
+          state.lastTickMs = now;
+          state.selectedDate = clampToWorkday(todayKey);
+          state.lastSessionDate = todayKey;
+        }
+
+        saveState();
+        renderAll(now);
+      }
+
+      function stopActiveTimer() {
+        const now = Date.now();
+        if (!state.activeProjectId) return;
+
+        if (!state.isPaused) {
+          commitElapsedSeconds(now);
+        }
+
+        state.activeProjectId = null;
+        state.isPaused = false;
+        state.lastTickMs = null;
+
+        saveState();
+        renderAll(now);
+      }
+
+      function reorderProjects(fromIndex, toIndex) {
+        if (
+          fromIndex === toIndex ||
+          fromIndex < 0 ||
+          toIndex < 0 ||
+          fromIndex >= state.projects.length ||
+          toIndex >= state.projects.length
+        ) {
+          return;
+        }
+        const [moved] = state.projects.splice(fromIndex, 1);
+        state.projects.splice(toIndex, 0, moved);
+        saveState();
+        renderProjectsModal();
+        renderAll(Date.now());
+      }
+
+      function deleteProject(projectId) {
+        if (state.projects.length <= 1) return;
+
+        const now = Date.now();
+        commitElapsedSeconds(now);
+
+        dirtyJournalProjects.delete(projectId);
+        state.projects = state.projects.filter((p) => p.id !== projectId);
+
+        for (const dKey of Object.keys(state.secondsByDate)) {
+          if (state.secondsByDate[dKey] && projectId in state.secondsByDate[dKey]) {
+            delete state.secondsByDate[dKey][projectId];
+            if (Object.keys(state.secondsByDate[dKey]).length === 0) {
+              delete state.secondsByDate[dKey];
+            }
+          }
+        }
+
+        if (state.settings.defaultProjectId === projectId) {
+          state.settings.defaultProjectId = state.projects[0].id;
+        }
+
+        if (state.activeProjectId === projectId) {
+          state.activeProjectId = null;
+          state.isPaused = false;
+          state.lastTickMs = null;
+        }
+
+        saveState();
+        renderProjectsModal();
+        renderAll(now, { forceJournalSync: true });
+      }
+
+      function selectJournalDay(dateKey) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return;
+        const now = Date.now();
+        commitElapsedSeconds(now);
+        dirtyJournalProjects.clear();
+        state.selectedDate = clampToWorkday(dateKey);
+        saveState();
+        renderAll(now, { forceJournalSync: true });
+      }
+
+      function applyJournalHours(projectId, hoursVal, minutesVal) {
+        const proj = getProject(projectId);
+        if (!proj) return;
+
+        const now = Date.now();
+        commitElapsedSeconds(now);
+
+        const safeHours = Math.max(0, Math.min(99, Math.floor(Number(hoursVal) || 0)));
+        const safeMinutes = Math.max(0, Math.min(59, Math.floor(Number(minutesVal) || 0)));
+        const newTotalSec = safeHours * 3600 + safeMinutes * 60;
+        const dateKey = state.selectedDate;
+
+        if (
+          state.activeProjectId === projectId &&
+          !state.isPaused &&
+          dateKey === toDateKey(now)
+        ) {
+          state.lastTickMs = now;
+        }
+
+        if (!state.secondsByDate[dateKey]) {
+          state.secondsByDate[dateKey] = {};
+        }
+
+        if (newTotalSec > 0) {
+          state.secondsByDate[dateKey][projectId] = newTotalSec;
+        } else {
+          delete state.secondsByDate[dateKey][projectId];
+          if (Object.keys(state.secondsByDate[dateKey]).length === 0) {
+            delete state.secondsByDate[dateKey];
+          }
+        }
+
+        dirtyJournalProjects.delete(projectId);
+        saveState();
+        renderAll(now, { forceJournalSync: true });
+      }
+
+      function isRowFocused(rowEl) {
+        return Boolean(rowEl && document.activeElement && rowEl.contains(document.activeElement));
+      }
+
+      /**
+       * Render the 5-day Monday-to-Friday selector bar and daily Journal editor rows.
+       * IMPORTANT: Never detach/re-append existing rows when project order hasn't changed,
+       * and never overwrite H/Min inputs while a row has focus or pending edits.
+       */
+      function renderJournalTile(now = Date.now(), options = {}) {
+        const forceJournalSync = Boolean(options.forceJournalSync);
+        const labelEl = document.getElementById("journalDateLabel");
+        const dayBarEl = document.getElementById("journalDayBar");
+        const listEl = document.getElementById("journalList");
+
+        const week = getISOWeekInfo(state.selectedDate);
+        const refDate = parseDateKey(state.selectedDate);
+        labelEl.textContent = refDate.toLocaleDateString("fr-CA", {
+          weekday: "short",
+          day: "2-digit",
+          month: "short",
+          year: "numeric"
+        });
+
+        const dayBarKey = week.days.map((d) => d.dateKey).join(",") + "|" + state.selectedDate;
+        if (dayBarEl.dataset.renderKey !== dayBarKey) {
+          dayBarEl.dataset.renderKey = dayBarKey;
+          dayBarEl.innerHTML = "";
+          for (let i = 0; i < week.days.length; i++) {
+            const day = week.days[i];
+            const btn = document.createElement("button");
+            btn.type = "button";
+            const isSelected = day.dateKey === state.selectedDate;
+            btn.className = "journal-day-btn" + (isSelected ? " active" : "");
+            btn.setAttribute("role", "tab");
+            btn.setAttribute("aria-selected", String(isSelected));
+            btn.dataset.dateKey = day.dateKey;
+            btn.title = `Éditer le ${day.dayName} ${day.dayNumber} (${day.dateKey})`;
+
+            const dName = document.createElement("span");
+            dName.className = "journal-day-name";
+            dName.textContent = day.dayName;
+
+            const dNum = document.createElement("span");
+            dNum.className = "journal-day-num";
+            dNum.textContent = day.dayNumber;
+
+            btn.appendChild(dName);
+            btn.appendChild(dNum);
+            btn.addEventListener("click", () => selectJournalDay(day.dateKey));
+            dayBarEl.appendChild(btn);
+          }
+        }
+
+        const existingRows = new Map();
+        const currentOrder = [];
+        listEl.querySelectorAll(".journal-row[data-project-id]").forEach((el) => {
+          existingRows.set(el.dataset.projectId, el);
+          currentOrder.push(el.dataset.projectId);
+        });
+
+        const desiredIds = state.projects.map((p) => p.id);
+        const desiredSet = new Set(desiredIds);
+        existingRows.forEach((el, id) => {
+          if (!desiredSet.has(id)) {
+            el.remove();
+            existingRows.delete(id);
+          }
+        });
+
+        const orderChanged =
+          currentOrder.length !== desiredIds.length ||
+          desiredIds.some((id, idx) => currentOrder[idx] !== id);
+
+        state.projects.forEach((proj) => {
+          const totalSec = getProjectSecondsForDate(state.selectedDate, proj.id, now);
+          const hours = Math.floor(totalSec / 3600);
+          const minutes = Math.floor((totalSec % 3600) / 60);
+
+          let row = existingRows.get(proj.id);
+          let hInput;
+          let mInput;
+          let dot;
+          let nameSpan;
+          let codeSpan;
+
+          if (!row) {
+            row = document.createElement("div");
+            row.className = "journal-row";
+            row.dataset.projectId = proj.id;
+
+            const info = document.createElement("div");
+            info.className = "journal-proj-info";
+
+            dot = document.createElement("span");
+            dot.className = "swatch";
+
+            nameSpan = document.createElement("span");
+            nameSpan.className = "journal-proj-name";
+
+            codeSpan = document.createElement("span");
+            codeSpan.className = "journal-proj-code";
+
+            info.appendChild(dot);
+            info.appendChild(nameSpan);
+            info.appendChild(codeSpan);
+
+            const controls = document.createElement("div");
+            controls.className = "journal-inputs";
+
+            const hGroup = document.createElement("div");
+            hGroup.className = "journal-num-group";
+            hInput = document.createElement("input");
+            hInput.type = "number";
+            hInput.min = "0";
+            hInput.max = "99";
+            hInput.step = "1";
+            hInput.className = "journal-num-input";
+            hInput.dataset.journalField = "hours";
+            hInput.setAttribute("aria-label", `Heures pour ${proj.name}`);
+            hGroup.appendChild(hInput);
+            hGroup.append("h");
+
+            const mGroup = document.createElement("div");
+            mGroup.className = "journal-num-group";
+            mInput = document.createElement("input");
+            mInput.type = "number";
+            mInput.min = "0";
+            mInput.max = "59";
+            mInput.step = "1";
+            mInput.className = "journal-num-input";
+            mInput.dataset.journalField = "minutes";
+            mInput.setAttribute("aria-label", `Minutes pour ${proj.name}`);
+            mGroup.appendChild(mInput);
+            mGroup.append("min");
+
+            const saveBtn = document.createElement("button");
+            saveBtn.type = "button";
+            saveBtn.className = "journal-save-btn";
+            saveBtn.textContent = "Appliquer";
+            saveBtn.title = "Enregistrer les heures de ce projet pour la date sélectionnée";
+
+            const markDirty = () => {
+              dirtyJournalProjects.add(proj.id);
+              row.classList.add("is-dirty");
+            };
+
+            const submitRow = () => {
+              applyJournalHours(proj.id, hInput.value, mInput.value);
+            };
+
+            hInput.addEventListener("input", markDirty);
+            mInput.addEventListener("input", markDirty);
+
+            saveBtn.addEventListener("click", submitRow);
+            hInput.addEventListener("keydown", (e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                submitRow();
+              } else if (e.key === "Escape") {
+                dirtyJournalProjects.delete(proj.id);
+                row.classList.remove("is-dirty");
+                renderJournalTile(Date.now(), { forceJournalSync: true });
+              }
+            });
+            mInput.addEventListener("keydown", (e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                submitRow();
+              } else if (e.key === "Escape") {
+                dirtyJournalProjects.delete(proj.id);
+                row.classList.remove("is-dirty");
+                renderJournalTile(Date.now(), { forceJournalSync: true });
+              }
+            });
+
+            controls.appendChild(hGroup);
+            controls.appendChild(mGroup);
+            controls.appendChild(saveBtn);
+
+            row.appendChild(info);
+            row.appendChild(controls);
+            listEl.appendChild(row);
+          } else {
+            dot = row.querySelector(".swatch");
+            nameSpan = row.querySelector(".journal-proj-name");
+            codeSpan = row.querySelector(".journal-proj-code");
+            hInput = row.querySelector('input[data-journal-field="hours"]');
+            mInput = row.querySelector('input[data-journal-field="minutes"]');
+            if (orderChanged) {
+              listEl.appendChild(row);
+            }
+          }
+
+          if (dot) dot.style.background = proj.color || "#2563eb";
+          if (nameSpan) {
+            nameSpan.textContent = proj.name;
+            nameSpan.title = proj.name;
+          }
+          if (codeSpan) {
+            codeSpan.textContent = proj.code || "";
+            codeSpan.style.display = proj.code ? "" : "none";
+          }
+
+          const hasFocus = isRowFocused(row);
+          const isDirty = dirtyJournalProjects.has(proj.id);
+          row.classList.toggle("is-dirty", isDirty);
+
+          // Never overwrite H or Min while focused or dirty; only sync when clean & unfocused.
+          if (!hasFocus && (!isDirty || forceJournalSync)) {
+            if (document.activeElement !== hInput) {
+              hInput.value = String(hours);
+            }
+            if (document.activeElement !== mInput) {
+              mInput.value = String(minutes);
+            }
+          }
+        });
+      }
+
+      function setPipNotice(message) {
+        const box = document.getElementById("pipNotice");
+        const text = document.getElementById("pipNoticeText");
+        if (!box || !text) return;
+        if (message) {
+          text.textContent = message;
+          box.classList.add("is-visible");
+        } else {
+          text.textContent = "";
+          box.classList.remove("is-visible");
+        }
+      }
+
+      function updatePipTriggerButton() {
+        const btn = document.getElementById("pipBtn");
+        const label = document.getElementById("pipBtnLabel");
+        if (!btn || !label) return;
+        const open = Boolean(pipWindow && !pipWindow.closed);
+        btn.classList.toggle("is-open", open);
+        label.textContent = open ? "Fermer widget" : "Mini-widget";
+        btn.title = open
+          ? "Fermer le mini-widget flottant"
+          : "Ouvrir un mini-widget flottant toujours visible au premier plan (Chrome / Edge)";
+      }
+
+      function renderMiniWidget(now = Date.now()) {
+        if (!pipWindow || pipWindow.closed) return;
+        const pDoc = pipWindow.document;
+        pDoc.body.classList.toggle("dark", state.settings.theme === "dark");
+
+        const card = pDoc.getElementById("pipTimerCard");
+        const statusLine = pDoc.getElementById("pipStatusLine");
+        const statusDot = pDoc.getElementById("pipStatusDot");
+        const statusText = pDoc.getElementById("pipStatusText");
+        const pointageEl = pDoc.getElementById("pipPointageVal");
+        const nameEl = pDoc.getElementById("pipProjName");
+        const codeEl = pDoc.getElementById("pipProjCode");
+        const clockEl = pDoc.getElementById("pipClock");
+        const pauseBtn = pDoc.getElementById("pipPauseBtn");
+        const stopBtn = pDoc.getElementById("pipStopBtn");
+        const gridEl = pDoc.getElementById("pipProjectsGrid");
+
+        if (!card) return;
+
+        const proj = state.activeProjectId ? getProject(state.activeProjectId) : null;
+        if (!proj) {
+          card.className = "pip-card pip-timer-card is-stopped";
+          card.style.borderTopColor = "";
+          statusLine.className = "status-line";
+          statusDot.className = "dot";
+          statusText.textContent = "ARRÊTÉ";
+          pointageEl.textContent = "00.00";
+          nameEl.textContent = "Aucun projet";
+          codeEl.style.display = "none";
+          codeEl.textContent = "";
+          clockEl.className = "pip-clock is-stopped";
+          clockEl.textContent = "00:00:00";
+          pauseBtn.textContent = "Pause";
+          pauseBtn.className = "is-running";
+          pauseBtn.disabled = true;
+          stopBtn.disabled = true;
+        } else {
+          const todayKey = toDateKey(now);
+          const todaySeconds = getProjectSecondsForDate(todayKey, proj.id, now);
+          const pointage = roundSecondsToQuarterHours(todaySeconds);
+
+          pointageEl.textContent = formatDecimalHours(pointage);
+          nameEl.textContent = proj.name;
+          if (proj.code) {
+            codeEl.textContent = proj.code;
+            codeEl.style.display = "block";
+          } else {
+            codeEl.style.display = "none";
+            codeEl.textContent = "";
+          }
+          clockEl.textContent = formatHMS(todaySeconds);
+          pauseBtn.disabled = false;
+          stopBtn.disabled = false;
+
+          if (!state.isPaused) {
+            card.className = "pip-card pip-timer-card";
+            card.style.borderTopColor = proj.color || "var(--primary)";
+            statusLine.className = "status-line is-running-text";
+            statusDot.className = "dot running";
+            statusText.textContent = "EN COURS";
+            clockEl.className = "pip-clock";
+            pauseBtn.textContent = "Pause";
+            pauseBtn.className = "is-running";
+          } else {
+            card.className = "pip-card pip-timer-card is-paused";
+            card.style.borderTopColor = "";
+            statusLine.className = "status-line is-paused-text";
+            statusDot.className = "dot paused";
+            statusText.textContent = "EN PAUSE";
+            clockEl.className = "pip-clock is-paused";
+            pauseBtn.textContent = "Reprendre";
+            pauseBtn.className = "is-paused";
+          }
+        }
+
+        const renderSig = state.projects
+          .map((p) => `${p.id}:${p.name}:${p.color}:${p.id === state.activeProjectId ? 1 : 0}`)
+          .join("|");
+        if (gridEl.dataset.sig !== renderSig) {
+          gridEl.dataset.sig = renderSig;
+          gridEl.innerHTML = "";
+          state.projects.forEach((p) => {
+            const btn = pDoc.createElement("button");
+            btn.type = "button";
+            btn.className = "pip-proj-btn" + (p.id === state.activeProjectId ? " selected" : "");
+            btn.title = p.code ? `${p.name} (${p.code})` : p.name;
+            btn.addEventListener("click", () => selectAndStartProject(p.id));
+
+            const sw = pDoc.createElement("span");
+            sw.className = "swatch";
+            sw.style.background = p.color || "#2563eb";
+
+            const lbl = pDoc.createElement("span");
+            lbl.className = "pip-proj-btn-label";
+            lbl.textContent = p.name;
+
+            btn.appendChild(sw);
+            btn.appendChild(lbl);
+            gridEl.appendChild(btn);
+          });
+        }
+      }
+
+      async function toggleMiniWidget() {
+        setPipNotice("");
+
+        if (pipWindow && !pipWindow.closed) {
+          pipWindow.close();
+          pipWindow = null;
+          updatePipTriggerButton();
+          return;
+        }
+
+        if (!("documentPictureInPicture" in window) || typeof window.documentPictureInPicture.requestWindow !== "function") {
+          setPipNotice("Le mini-widget flottant nécessite Google Chrome ou Microsoft Edge (version récente).");
+          return;
+        }
+
+        try {
+          const win = await window.documentPictureInPicture.requestWindow({
+            width: 340,
+            height: 360
+          });
+
+          pipWindow = win;
+          const pDoc = win.document;
+          pDoc.documentElement.lang = "fr";
+          pDoc.title = "ChronoProjets — Mini-widget";
+
+          document.querySelectorAll("style").forEach((styleEl) => {
+            const cloned = pDoc.createElement("style");
+            cloned.textContent = styleEl.textContent;
+            pDoc.head.appendChild(cloned);
+          });
+
+          pDoc.body.className = "pip-body" + (state.settings.theme === "dark" ? " dark" : "");
+          pDoc.body.innerHTML = `
+            <section id="pipTimerCard" class="pip-card pip-timer-card is-stopped">
+              <div class="pip-top-row">
+                <div id="pipStatusLine" class="status-line">
+                  <span id="pipStatusDot" class="dot"></span>
+                  <span id="pipStatusText">ARRÊTÉ</span>
+                </div>
+                <div class="pip-pointage">Pointage : <strong id="pipPointageVal">00.00</strong></div>
+              </div>
+              <div class="pip-main-row">
+                <div class="pip-proj-wrap">
+                  <div id="pipProjName" class="pip-proj-name">Aucun projet</div>
+                  <div id="pipProjCode" class="pip-proj-code" style="display:none;"></div>
+                </div>
+                <div id="pipClock" class="pip-clock is-stopped">00:00:00</div>
+              </div>
+              <div class="pip-actions">
+                <button id="pipPauseBtn" type="button" class="is-running" disabled>Pause</button>
+                <button id="pipStopBtn" type="button" class="ghost-stop" disabled>Arrêter</button>
+              </div>
+            </section>
+            <section class="pip-card pip-projects-card">
+              <div class="pip-projects-label">Changer de projet</div>
+              <div id="pipProjectsGrid" class="pip-projects-grid"></div>
+            </section>
+          `;
+
+          pDoc.getElementById("pipPauseBtn").addEventListener("click", togglePauseResume);
+          pDoc.getElementById("pipStopBtn").addEventListener("click", stopActiveTimer);
+
+          win.addEventListener("pagehide", () => {
+            if (pipWindow === win) {
+              pipWindow = null;
+            }
+            updatePipTriggerButton();
+          });
+
+          updatePipTriggerButton();
+          renderMiniWidget(Date.now());
+        } catch (err) {
+          setPipNotice(
+            "Impossible d'ouvrir le mini-widget flottant depuis ce contexte : ouvrez directement votre fichier HTML dans Chrome ou Edge."
+          );
+        }
+      }
+
+      function renderTheme() {
+        document.body.classList.toggle("dark", state.settings.theme === "dark");
+        if (pipWindow && !pipWindow.closed) {
+          pipWindow.document.body.classList.toggle("dark", state.settings.theme === "dark");
+        }
+      }
+
+      function renderAutoStart() {
+        const toggle = document.getElementById("autoStartToggle");
+        const sw = document.getElementById("autoStartSwitch");
+        const label = document.getElementById("autoStartLabel");
+        const on = Boolean(state.settings.autoStart);
+        toggle.setAttribute("aria-checked", String(on));
+        sw.classList.toggle("on", on);
+        label.textContent = on ? "ON" : "OFF";
+      }
+
+      function renderTimerCard(now = Date.now()) {
+        const timerCard = document.getElementById("timerCard");
+        const statusLine = document.getElementById("statusLine");
+        const dot = document.getElementById("statusDot");
+        const statusText = document.getElementById("statusText");
+        const pauseResumeBtn = document.getElementById("pauseResumeBtn");
+        const stopTimerBtn = document.getElementById("stopTimerBtn");
+        const nameEl = document.getElementById("currentProjectName");
+        const codeEl = document.getElementById("currentProjectCode");
+        const metaEl = document.getElementById("currentProjectMeta");
+        const clockEl = document.getElementById("mainClock");
+
+        const proj = state.activeProjectId ? getProject(state.activeProjectId) : null;
+
+        if (!proj) {
+          timerCard.className = "card timer-card is-stopped";
+          timerCard.style.borderTopColor = "";
+          statusLine.className = "status-line";
+          dot.className = "dot";
+          statusText.textContent = "ARRÊTÉ";
+          pauseResumeBtn.textContent = "Pause";
+          pauseResumeBtn.className = "is-running";
+          pauseResumeBtn.disabled = true;
+          stopTimerBtn.disabled = true;
+          nameEl.textContent = "Aucun projet";
+          codeEl.style.display = "none";
+          codeEl.textContent = "";
+          metaEl.textContent = "Sélectionnez un projet pour démarrer";
+          clockEl.className = "clock is-stopped";
+          clockEl.textContent = "00:00:00";
+          return;
+        }
+
+        const todayKey = toDateKey(now);
+        const todaySeconds = getProjectSecondsForDate(todayKey, proj.id, now);
+
+        nameEl.textContent = proj.name;
+        if (proj.code) {
+          codeEl.textContent = proj.code;
+          codeEl.style.display = "inline-flex";
+        } else {
+          codeEl.style.display = "none";
+          codeEl.textContent = "";
+        }
+        clockEl.textContent = formatHMS(todaySeconds);
+        pauseResumeBtn.disabled = false;
+        stopTimerBtn.disabled = false;
+
+        if (!state.isPaused) {
+          timerCard.className = "card timer-card";
+          timerCard.style.borderTopColor = proj.color || "var(--primary)";
+          statusLine.className = "status-line is-running-text";
+          dot.className = "dot running";
+          statusText.textContent = "EN COURS";
+          clockEl.className = "clock";
+          pauseResumeBtn.textContent = "Pause";
+          pauseResumeBtn.className = "is-running";
+          metaEl.textContent = "Compteur du jour en cours";
+        } else {
+          timerCard.className = "card timer-card is-paused";
+          timerCard.style.borderTopColor = "";
+          statusLine.className = "status-line is-paused-text";
+          dot.className = "dot paused";
+          statusText.textContent = "EN PAUSE";
+          clockEl.className = "clock is-paused";
+          pauseResumeBtn.textContent = "Reprendre";
+          pauseResumeBtn.className = "is-paused";
+          metaEl.textContent = "Compteur du jour en pause";
+        }
+      }
+
+      function renderProjectsGrid() {
+        const grid = document.getElementById("projectsGrid");
+        grid.innerHTML = "";
+        const selectedId = state.activeProjectId;
+
+        state.projects.forEach((proj) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "project-tile" + (proj.id === selectedId ? " selected" : "");
+          btn.addEventListener("click", () => selectAndStartProject(proj.id));
+
+          const header = document.createElement("div");
+          header.className = "tile-header";
+
+          const swatch = document.createElement("span");
+          swatch.className = "swatch";
+          swatch.style.background = proj.color || "#2563eb";
+
+          const nameSpan = document.createElement("span");
+          nameSpan.className = "tile-name";
+          nameSpan.textContent = proj.name;
+
+          header.appendChild(swatch);
+          header.appendChild(nameSpan);
+          btn.appendChild(header);
+
+          if (proj.code) {
+            const codeEl = document.createElement("div");
+            codeEl.className = "tile-code";
+            codeEl.textContent = proj.code;
+            btn.appendChild(codeEl);
+          }
+
+          grid.appendChild(btn);
+        });
+      }
+
+      function renderWeeklySummary(now = Date.now()) {
+        document.getElementById("datePicker").value = state.selectedDate;
+
+        const week = getISOWeekInfo(state.selectedDate);
+        document.getElementById("weekNumberBadge").textContent =
+          `Semaine ${String(week.weekNumber).padStart(2, "0")}`;
+        document.getElementById("weekRangeLabel").textContent = week.rangeText;
+
+        const host = document.getElementById("weeklyTableHost");
+        const table = document.createElement("table");
+        table.className = "weekly-table";
+
+        const thead = document.createElement("thead");
+        const headRow = document.createElement("tr");
+
+        const thProj = document.createElement("th");
+        thProj.className = "col-proj";
+        thProj.textContent = "Projet";
+        headRow.appendChild(thProj);
+
+        const thCode = document.createElement("th");
+        thCode.className = "col-code";
+        thCode.textContent = "Code";
+        headRow.appendChild(thCode);
+
+        week.days.forEach((day) => {
+          const th = document.createElement("th");
+          const isSelected = day.dateKey === state.selectedDate;
+          th.className = "col-day" + (isSelected ? " selected-col" : "");
+          th.textContent = `${day.dayName} ${day.dayNumber}`;
+          th.title = `Sélectionner le ${day.dayName} ${day.dayNumber} dans le journal`;
+          th.addEventListener("click", () => selectJournalDay(day.dateKey));
+          headRow.appendChild(th);
+        });
+
+        const thTotal = document.createElement("th");
+        thTotal.className = "col-total";
+        thTotal.textContent = "Total";
+        headRow.appendChild(thTotal);
+
+        thead.appendChild(headRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+        const dailyTotals = [0, 0, 0, 0, 0];
+        let grandTotalHours = 0;
+
+        state.projects.forEach((proj) => {
+          const tr = document.createElement("tr");
+
+          const tdProj = document.createElement("td");
+          tdProj.className = "col-proj";
+
+          const inner = document.createElement("div");
+          inner.className = "code-cell-inner";
+
+          const dot = document.createElement("span");
+          dot.className = "swatch";
+          dot.style.background = proj.color || "#2563eb";
+
+          const label = document.createElement("span");
+          label.className = "code-cell-label";
+          label.textContent = proj.name;
+
+          inner.appendChild(dot);
+          inner.appendChild(label);
+          tdProj.appendChild(inner);
+          tr.appendChild(tdProj);
+
+          const tdCode = document.createElement("td");
+          tdCode.className = "col-code";
+          tdCode.textContent = proj.code ? proj.code : "—";
+          tr.appendChild(tdCode);
+
+          let rowTotalHours = 0;
+
+          week.days.forEach((day, idx) => {
+            const rawSec = getProjectSecondsForDate(day.dateKey, proj.id, now);
+            const roundedHours = roundSecondsToQuarterHours(rawSec);
+            rowTotalHours += roundedHours;
+            dailyTotals[idx] += roundedHours;
+
+            const tdDay = document.createElement("td");
+            tdDay.className = "col-day" + (roundedHours === 0 ? " zero-val" : "");
+            tdDay.textContent = formatDecimalHours(roundedHours);
+            tr.appendChild(tdDay);
+          });
+
+          grandTotalHours += rowTotalHours;
+
+          const tdRowTotal = document.createElement("td");
+          tdRowTotal.className = "col-total" + (rowTotalHours === 0 ? " zero-val" : "");
+          tdRowTotal.textContent = formatDecimalHours(rowTotalHours);
+          tr.appendChild(tdRowTotal);
+
+          tbody.appendChild(tr);
+        });
+
+        const totalTr = document.createElement("tr");
+        totalTr.className = "totals-row";
+
+        const tdTotalLabel = document.createElement("td");
+        tdTotalLabel.className = "col-proj";
+        tdTotalLabel.colSpan = 2;
+        tdTotalLabel.textContent = "Total jour";
+        totalTr.appendChild(tdTotalLabel);
+
+        dailyTotals.forEach((dayHours) => {
+          const td = document.createElement("td");
+          td.className = "col-day" + (dayHours === 0 ? " zero-val" : "");
+          td.textContent = formatDecimalHours(dayHours);
+          totalTr.appendChild(td);
+        });
+
+        const tdGrand = document.createElement("td");
+        tdGrand.className = "col-total" + (grandTotalHours === 0 ? " zero-val" : "");
+        tdGrand.textContent = formatDecimalHours(grandTotalHours);
+        totalTr.appendChild(tdGrand);
+
+        tbody.appendChild(totalTr);
+        table.appendChild(tbody);
+
+        host.innerHTML = "";
+        host.appendChild(table);
+
+        document.getElementById("weekGrandTotal").textContent =
+          formatDecimalHours(grandTotalHours);
+      }
+
+      /**
+       * Render project list inside the modal with drag-and-drop handle, up/down buttons,
+       * inline editing, default star selector, and Supprimer action.
+       */
+      function renderProjectsModal() {
+        const list = document.getElementById("projectManageList");
+        list.innerHTML = "";
+
+        const canDelete = state.projects.length > 1;
+        const total = state.projects.length;
+
+        state.projects.forEach((proj, index) => {
+          const isDefault = state.settings.defaultProjectId === proj.id;
+
+          const row = document.createElement("div");
+          row.className = "project-item-row";
+          row.draggable = false;
+
+          row.addEventListener("dragstart", (e) => {
+            draggedProjectIndex = index;
+            row.classList.add("is-dragging");
+            if (e.dataTransfer) {
+              e.dataTransfer.effectAllowed = "move";
+              e.dataTransfer.setData("text/plain", proj.id);
+            }
+          });
+
+          row.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            if (draggedProjectIndex !== null && draggedProjectIndex !== index) {
+              row.classList.add("is-drag-over");
+            }
+          });
+
+          row.addEventListener("dragleave", () => {
+            row.classList.remove("is-drag-over");
+          });
+
+          row.addEventListener("drop", (e) => {
+            e.preventDefault();
+            row.classList.remove("is-drag-over");
+            if (draggedProjectIndex !== null && draggedProjectIndex !== index) {
+              const from = draggedProjectIndex;
+              draggedProjectIndex = null;
+              reorderProjects(from, index);
+            }
+          });
+
+          row.addEventListener("dragend", () => {
+            draggedProjectIndex = null;
+            row.draggable = false;
+            row.classList.remove("is-dragging");
+            list.querySelectorAll(".is-drag-over").forEach((el) => el.classList.remove("is-drag-over"));
+          });
+
+          const main = document.createElement("div");
+          main.className = "project-item-main";
+
+          const grip = document.createElement("span");
+          grip.className = "drag-handle";
+          grip.title = "Glisser pour réorganiser";
+          grip.setAttribute("aria-hidden", "true");
+          grip.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="19" r="1"></circle>
+              <circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="19" r="1"></circle>
+            </svg>
+          `;
+          grip.addEventListener("pointerdown", () => {
+            row.draggable = true;
+          });
+          grip.addEventListener("pointerup", () => {
+            row.draggable = false;
+          });
+
+          const arrows = document.createElement("div");
+          arrows.className = "reorder-arrows";
+
+          const upBtn = document.createElement("button");
+          upBtn.type = "button";
+          upBtn.className = "reorder-btn";
+          upBtn.disabled = index === 0;
+          upBtn.title = "Monter le projet";
+          upBtn.setAttribute("aria-label", `Monter ${proj.name}`);
+          upBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
+          upBtn.addEventListener("click", () => reorderProjects(index, index - 1));
+
+          const downBtn = document.createElement("button");
+          downBtn.type = "button";
+          downBtn.className = "reorder-btn";
+          downBtn.disabled = index === total - 1;
+          downBtn.title = "Descendre le projet";
+          downBtn.setAttribute("aria-label", `Descendre ${proj.name}`);
+          downBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+          downBtn.addEventListener("click", () => reorderProjects(index, index + 1));
+
+          arrows.appendChild(upBtn);
+          arrows.appendChild(downBtn);
+
+          const colorInput = document.createElement("input");
+          colorInput.type = "color";
+          colorInput.className = "inline-color-picker";
+          colorInput.value = proj.color || "#3b82f6";
+          colorInput.title = "Changer la couleur";
+          colorInput.addEventListener("input", () => {
+            proj.color = colorInput.value;
+            saveState();
+            renderAll();
+          });
+
+          const nameInput = document.createElement("input");
+          nameInput.type = "text";
+          nameInput.className = "inline-edit-name";
+          nameInput.value = proj.name;
+          nameInput.placeholder = "Nom du projet";
+          nameInput.title = "Modifier le nom";
+          nameInput.addEventListener("change", () => {
+            const trimmed = nameInput.value.trim();
+            if (!trimmed) {
+              nameInput.value = proj.name;
+              return;
+            }
+            proj.name = trimmed;
+            saveState();
+            renderAll();
+          });
+
+          const codeInput = document.createElement("input");
+          codeInput.type = "text";
+          codeInput.className = "inline-edit-code";
+          codeInput.value = proj.code || "";
+          codeInput.placeholder = "Code";
+          codeInput.maxLength = 12;
+          codeInput.title = "Modifier le code";
+          codeInput.addEventListener("change", () => {
+            proj.code = codeInput.value.trim();
+            saveState();
+            renderAll();
+          });
+
+          main.appendChild(grip);
+          main.appendChild(arrows);
+          main.appendChild(colorInput);
+          main.appendChild(nameInput);
+          main.appendChild(codeInput);
+
+          const actions = document.createElement("div");
+          actions.className = "project-item-actions";
+
+          const starBtn = document.createElement("button");
+          starBtn.type = "button";
+          starBtn.className = "star-btn" + (isDefault ? " is-default" : "");
+          starBtn.title = "Définir comme projet par défaut au démarrage";
+          starBtn.setAttribute("aria-label", "Définir comme projet par défaut");
+          starBtn.innerHTML = `
+            <svg width="16" height="16" fill="${isDefault ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+            </svg>
+          `;
+          starBtn.addEventListener("click", () => {
+            state.settings.defaultProjectId = proj.id;
+            saveState();
+            renderProjectsModal();
+            renderProjectsGrid();
+          });
+
+          const delBtn = document.createElement("button");
+          delBtn.type = "button";
+          delBtn.className = "delete-btn";
+          delBtn.textContent = "Supprimer";
+          delBtn.disabled = !canDelete;
+          delBtn.title = canDelete
+            ? "Supprimer ce projet"
+            : "Au moins un projet doit être conservé";
+          delBtn.addEventListener("click", () => deleteProject(proj.id));
+
+          actions.appendChild(starBtn);
+          actions.appendChild(delBtn);
+
+          row.appendChild(main);
+          row.appendChild(actions);
+          list.appendChild(row);
+        });
+      }
+
+      function openModal(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.add("open");
+        el.setAttribute("aria-hidden", "false");
+      }
+
+      function closeModal(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove("open");
+        el.setAttribute("aria-hidden", "true");
+      }
+
+      function renderAll(now = Date.now(), options = {}) {
+        renderTheme();
+        renderAutoStart();
+        renderTimerCard(now);
+        renderProjectsGrid();
+        renderJournalTile(now, options);
+        renderWeeklySummary(now);
+        renderMiniWidget(now);
+      }
+
+      // Wire controls
+      const autoStartEl = document.getElementById("autoStartToggle");
+      autoStartEl.addEventListener("click", () => {
+        state.settings.autoStart = !state.settings.autoStart;
+        saveState();
+        renderAutoStart();
+      });
+      autoStartEl.addEventListener("keydown", (e) => {
+        if (e.key === " " || e.key === "Enter") {
+          e.preventDefault();
+          state.settings.autoStart = !state.settings.autoStart;
+          saveState();
+          renderAutoStart();
+        }
+      });
+
+      document.getElementById("pipBtn").addEventListener("click", toggleMiniWidget);
+      document.getElementById("pipNoticeClose").addEventListener("click", () => setPipNotice(""));
+
+      document.getElementById("themeBtn").addEventListener("click", () => {
+        state.settings.theme = state.settings.theme === "dark" ? "light" : "dark";
+        saveState();
+        renderTheme();
+      });
+
+      document.getElementById("pauseResumeBtn").addEventListener("click", togglePauseResume);
+      document.getElementById("stopTimerBtn").addEventListener("click", stopActiveTimer);
+
+      document.getElementById("openProjectsModalBtn").addEventListener("click", () => {
+        setTransferFeedback("", "");
+        renderProjectsModal();
+        openModal("projectsModal");
+      });
+
+      document.getElementById("exportJsonBtn").addEventListener("click", exportBackupJson);
+      document.getElementById("exportCsvBtn").addEventListener("click", exportWeeklyCsv);
+      document.getElementById("importJsonBtn").addEventListener("click", () => {
+        const input = document.getElementById("importJsonInput");
+        if (input) input.click();
+      });
+      document.getElementById("importJsonInput").addEventListener("change", (e) => {
+        const input = e.target;
+        const file = input.files && input.files[0];
+        input.value = "";
+        handleImportJsonFile(file);
+      });
+
+      document.getElementById("addProjectForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById("newProjectName");
+        const codeInput = document.getElementById("newProjectCode");
+        const colorInput = document.getElementById("newProjectColor");
+
+        const name = nameInput.value.trim();
+        if (!name) return;
+
+        state.projects.push({
+          id: uid("proj"),
+          name,
+          code: codeInput.value.trim(),
+          color: colorInput.value || "#3b82f6"
+        });
+
+        nameInput.value = "";
+        codeInput.value = "";
+        saveState();
+        renderProjectsModal();
+        renderAll(Date.now(), { forceJournalSync: true });
+      });
+
+      document.querySelectorAll("[data-close]").forEach((btn) => {
+        btn.addEventListener("click", () => closeModal(btn.getAttribute("data-close")));
+      });
+
+      document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
+        backdrop.addEventListener("click", (e) => {
+          if (e.target === backdrop) closeModal(backdrop.id);
+        });
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeModal("projectsModal");
+        }
+      });
+
+      function shiftSelectedWeek(deltaWeeks) {
+        const ref = parseDateKey(state.selectedDate);
+        const shifted = addCalendarDays(ref, deltaWeeks * 7);
+        dirtyJournalProjects.clear();
+        state.selectedDate = clampToWorkday(toDateKey(shifted.getTime()));
+        saveState();
+        renderAll(Date.now(), { forceJournalSync: true });
+      }
+
+      document.getElementById("prevWeekBtn").addEventListener("click", () => shiftSelectedWeek(-1));
+      document.getElementById("nextWeekBtn").addEventListener("click", () => shiftSelectedWeek(1));
+      document.getElementById("thisWeekBtn").addEventListener("click", () => {
+        dirtyJournalProjects.clear();
+        state.selectedDate = clampToWorkday(toDateKey(Date.now()));
+        saveState();
+        renderAll(Date.now(), { forceJournalSync: true });
+      });
+
+      document.getElementById("datePicker").addEventListener("change", (e) => {
+        if (e.target.value) {
+          dirtyJournalProjects.clear();
+          state.selectedDate = clampToWorkday(e.target.value);
+          saveState();
+          renderAll(Date.now(), { forceJournalSync: true });
+        }
+      });
+
+      window.addEventListener("beforeunload", () => {
+        if (state.activeProjectId && !state.isPaused) {
+          commitElapsedSeconds(Date.now());
+        }
+        saveState();
+        if (pipWindow && !pipWindow.closed) {
+          pipWindow.close();
+        }
+      });
+
+      function syncOnResumeOrVisibility() {
+        const now = Date.now();
+        const todayKey = toDateKey(now);
+
+        if (document.hidden) {
+          if (state.activeProjectId && !state.isPaused) {
+            commitElapsedSeconds(now);
+            saveState();
+          }
+          return;
+        }
+
+        if (state.activeProjectId && !state.isPaused) {
+          commitElapsedSeconds(now);
+          saveState();
+        } else if (state.lastSessionDate && state.lastSessionDate !== todayKey) {
+          resetStateForNewDay(now);
+          saveState();
+        }
+        renderAll(now);
+      }
+
+      document.addEventListener("visibilitychange", syncOnResumeOrVisibility);
+      window.addEventListener("focus", syncOnResumeOrVisibility);
+
+      const initNow = Date.now();
+      const initTodayKey = toDateKey(initNow);
+      const prevTickDay = typeof state.lastTickMs === "number" ? toDateKey(state.lastTickMs) : null;
+      const prevDay = state.lastSessionDate || prevTickDay || state.selectedDate;
+
+      if (prevDay !== initTodayKey || (prevTickDay !== null && prevTickDay !== initTodayKey)) {
+        resetStateForNewDay(initNow);
+        saveState();
+      } else if (state.activeProjectId) {
+        if (!state.isPaused) {
+          commitElapsedSeconds(initNow);
+          state.lastTickMs = initNow;
+        }
+        state.lastSessionDate = initTodayKey;
+        saveState();
+      } else if (state.settings.autoStart) {
+        const defaultProj = state.settings.defaultProjectId
+          ? getProject(state.settings.defaultProjectId)
+          : null;
+        const targetProj = defaultProj || state.projects[0] || null;
+        if (targetProj) {
+          state.activeProjectId = targetProj.id;
+          state.isPaused = false;
+          state.lastTickMs = initNow;
+          state.selectedDate = clampToWorkday(initTodayKey);
+          state.lastSessionDate = initTodayKey;
+          saveState();
+        }
+      } else {
+        state.lastSessionDate = initTodayKey;
+        saveState();
+      }
+
+      renderAll(initNow, { forceJournalSync: true });
+
+      setInterval(() => {
+        const now = Date.now();
+        const todayKey = toDateKey(now);
+
+        if (!state.activeProjectId || state.isPaused) {
+          if (!document.hidden && state.lastSessionDate && state.lastSessionDate !== todayKey) {
+            resetStateForNewDay(now);
+            saveState();
+            renderAll(now, { forceJournalSync: true });
+          }
+          return;
+        }
+
+        const prevSelectedDate = state.selectedDate;
+        commitElapsedSeconds(now);
+        saveState();
+        if (state.selectedDate !== prevSelectedDate) {
+          renderAll(now, { forceJournalSync: true });
+        } else {
+          renderTimerCard(now);
+          renderJournalTile(now);
+          renderWeeklySummary(now);
+          renderMiniWidget(now);
+        }
+      }, 1000);
+    })();
+  </script>
+</body>
+</html>
